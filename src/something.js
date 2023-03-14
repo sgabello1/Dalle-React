@@ -1,0 +1,95 @@
+//import './App.css';
+import React, { useEffect, useState } from "react";
+import Weather from './components/weather';
+//import { Dimmer, Loader } from 'semantic-ui-react';
+import background from "./img/couch.jpeg"; 
+import {Image, ScrollView, Text} from 'react-native';
+
+
+
+const { Configuration, OpenAIApi } = require("openai");
+const configuration = new Configuration({
+  apiKey: process.env.REACT_APP_API_KEY_DALLE,
+});
+const openai = new OpenAIApi(configuration);
+
+function App() {
+
+  const [lat, setLat] = useState([]);
+  const [long, setLong] = useState([]);
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      navigator.geolocation.getCurrentPosition(function(position) {
+        setLat(position.coords.latitude);
+        setLong(position.coords.longitude);
+      });
+
+      await fetch(`${process.env.REACT_APP_API_URL}/weather/?lat=${lat}&lon=${long}&units=metric&APPID=${process.env.REACT_APP_API_KEY_OW}`)
+      .then(res => res.json())
+      .then(result => {
+        setData(result)
+        console.log(result);
+      });
+    }
+    fetchData();
+  }, [lat,long])
+  console.log({data});
+
+  const [userPrompt, setUserPrompt] = useState("")
+  const [imageUrl, setImageUrl] = useState("")
+
+  const generateImage = async () => {
+    const imageParameters = {
+      prompt: userPrompt,
+      n: 1,
+      size: "256x256",
+    }
+    const response = await openai.createImage(imageParameters);
+    const urlData = response.data.data[0].url
+    console.log(urlData);
+    setImageUrl(urlData);
+}
+
+  return (
+    
+      <ScrollView >
+      <div style={{ backgroundImage:`url(${background})` ,backgroundRepeat:"no-repeat",backgroundPosition: 'center',backgroundSize: 'cover' ,height:800 }} className="App" >
+      <div>
+      <p>                               </p>
+      {
+        imageUrl
+          ? <img src={imageUrl} className="image" alt="ai thing" />
+          : <img src={logo} className="image" alt="logo"  />
+      }
+
+      <p>What do you want to see?</p>
+      <input         placeholder='//A sunset on the Sydney Opera House //'
+        onChange={(e) => setUserPrompt(e.target.value)}
+      />
+      <button onClick={() => generateImage()}> Generate </button>
+
+
+    </div>
+    <div>
+      {(typeof data.main != 'undefined') ? (
+        <Weather weatherData={data}/>
+      ): (
+        <div>
+
+       </div>
+     )}
+    </div>
+    </div>
+    </ScrollView >
+  );
+
+}
+
+
+
+
+
+
+

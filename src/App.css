@@ -13,6 +13,22 @@
   }
 }
 
+@media only screen and (max-width: 768px) {
+  .App {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .left-container {
+    order: 2;
+  }
+
+  .right-container {
+    order: 1;
+  }
+}
+
+
 .App-header {
   background-color: #282c34;
   min-height: 100vh;
@@ -36,3 +52,4 @@
     transform: rotate(360deg);
   }
 }
+
